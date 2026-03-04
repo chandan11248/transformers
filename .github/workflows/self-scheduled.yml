@@ -41,6 +41,10 @@ on:
       pytest_marker:
         required: false
         type: string
+      extra_pip_packages:
+        required: false
+        default: ""
+        type: string
       pr_number:
         required: false
         type: string
@@ -149,6 +153,7 @@ jobs:
       runner_type: ${{ inputs.runner_type }}
       report_repo_id: ${{ inputs.report_repo_id }}
       pytest_marker: ${{ inputs.pytest_marker }}
+      extra_pip_packages: ${{ inputs.extra_pip_packages }}
     secrets: inherit
 
   run_trainer_and_fsdp_gpu:
@@ -170,6 +175,7 @@ jobs:
       runner_type: ${{ inputs.runner_type }}
       report_repo_id: ${{ inputs.report_repo_id }}
       report_name_prefix: run_trainer_and_fsdp_gpu
+      extra_pip_packages: ${{ inputs.extra_pip_packages }}
     secrets: inherit
 
   run_pipelines_torch_gpu:

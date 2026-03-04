@@ -31,6 +31,10 @@ on:
       pytest_marker:
         required: false
         type: string
+      extra_pip_packages:
+        required: false
+        default: ""
+        type: string
 
 env:
   HF_HOME: /mnt/cache
@@ -93,6 +97,13 @@ jobs:
       - name: Reinstall transformers in edit mode (remove the one installed during docker image build)
         working-directory: /transformers
         run: python3 -m pip uninstall -y transformers && python3 -m pip install -e .
+
+      - name: Install extra pip packages
+        if: ${{ inputs.extra_pip_packages != '' }}
+        working-directory: /transformers
+        env:
+          extra_pip_packages: ${{ inputs.extra_pip_packages }}
+        run: python3 -m pip install ${extra_pip_packages}
 
       - name: Update / Install some packages (for Past CI)
         if: ${{ contains(inputs.docker, '-past-') }}
