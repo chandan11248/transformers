@@ -18,7 +18,15 @@ import unittest
 from pathlib import Path
 
 import pytest
-from doc_builder.testing import DocIntegrationTest
+
+
+try:
+    from doc_builder.testing import DocIntegrationTest
+
+    DOC_BUILDER_AVAILABLE = True
+except ImportError:
+    DocIntegrationTest = unittest.TestCase
+    DOC_BUILDER_AVAILABLE = False
 
 from transformers import (
     AutoProcessor,
@@ -305,6 +313,10 @@ class GlmAsrForConditionalGenerationIntegrationTest(unittest.TestCase):
 
 @require_torch
 @slow
+@unittest.skipUnless(
+    DOC_BUILDER_AVAILABLE,
+    "test requires `hf-doc-builder`; use GitHub main: pip install 'hf-doc-builder @ git+https://github.com/huggingface/doc-builder.git@main'",
+)
 class GlmAsrDocIntegrationTest(DocIntegrationTest):
     # tests/models/glmasr -> tests/models -> tests -> repo root
     doc_path = Path(__file__).resolve().parents[3] / "docs" / "source" / "en" / "model_doc" / "glmasr.md"
