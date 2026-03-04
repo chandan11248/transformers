@@ -100,6 +100,7 @@ jobs:
       package: transformers
       languages: ar de en es fr hi it ja ko pt zh
       additional_args: --emit-warning
+      doc_builder_revision: main
 
   update_run_status:
     name: Update Check Run Status

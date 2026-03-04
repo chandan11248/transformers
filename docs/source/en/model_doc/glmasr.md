@@ -61,6 +61,7 @@ inputs = inputs.to(model.device, dtype=model.dtype)
 outputs = model.generate(**inputs, do_sample=False, max_new_tokens=500)
 
 decoded_outputs = processor.batch_decode(outputs[:, inputs.input_ids.shape[1] :], skip_special_tokens=True)
+assert len(decoded_outputs) == 1
 print(decoded_outputs)
 ```
 
