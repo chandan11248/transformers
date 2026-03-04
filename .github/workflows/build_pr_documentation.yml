@@ -17,7 +17,7 @@ jobs:
       pr_number: ${{ github.event.number }}
       package: transformers
       languages: en
-
+      additional_args: --emit-warning
   # Satisfy required check in merge queue without actually building docs
   skip_merge_queue:
     if: github.event_name == 'merge_group'
