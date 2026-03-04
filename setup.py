@@ -230,6 +230,7 @@ extras["testing"] = (
         "rjieba",
         "beautifulsoup4",
         "tensorboard",
+        "hf-doc-builder",
         "sacrebleu",  # needed in trainer tests, see references to `run_translation.py`
         "filelock",  # filesystem locks, e.g., to prevent parallel downloads
     )
