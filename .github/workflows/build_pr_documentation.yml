@@ -18,7 +18,7 @@ jobs:
       package: transformers
       languages: en
       additional_args: --emit-warning
-      doc_builder_revision: main
+      doc_builder_revision: add-runnable-block-processing
   # Satisfy required check in merge queue without actually building docs
   skip_merge_queue:
     if: github.event_name == 'merge_group'

@@ -315,7 +315,7 @@ class GlmAsrForConditionalGenerationIntegrationTest(unittest.TestCase):
 @slow
 @unittest.skipUnless(
     DOC_BUILDER_AVAILABLE,
-    "test requires `hf-doc-builder`; use GitHub main: pip install 'hf-doc-builder @ git+https://github.com/huggingface/doc-builder.git@main'",
+    "test requires `hf-doc-builder`; use: pip install 'hf-doc-builder @ git+https://github.com/huggingface/doc-builder.git@add-runnable-block-processing'",
 )
 class GlmAsrDocIntegrationTest(DocIntegrationTest):
     # tests/models/glmasr -> tests/models -> tests -> repo root
