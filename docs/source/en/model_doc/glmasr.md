@@ -61,7 +61,7 @@ inputs = inputs.to(model.device, dtype=model.dtype)
 outputs = model.generate(**inputs, do_sample=False, max_new_tokens=500)
 
 decoded_outputs = processor.batch_decode(outputs[:, inputs.input_ids.shape[1] :], skip_special_tokens=True)
-assert len(decoded_outputs) == 1
+assert len(decoded_outputs) == 1  # nodoc
 print(decoded_outputs)
 ```
 
@@ -182,7 +182,7 @@ inputs_transcription = processor.apply_transcription_request(
     ],
 ).to(model.device, dtype=model.dtype)
 
-for key in inputs:
+for key in inputs:  # doc-builder: ignore-bare-assert
     assert torch.equal(inputs[key], inputs_transcription[key])
 
 outputs = model.generate(**inputs, do_sample=False, max_new_tokens=500)
