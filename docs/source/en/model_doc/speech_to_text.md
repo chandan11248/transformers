@@ -50,23 +50,18 @@ be installed as follows: `apt install libsndfile1-dev`
 
 - ASR and Speech Translation
 
-```python
->>> import torch
->>> from transformers import Speech2TextProcessor, Speech2TextForConditionalGeneration
->>> from datasets import load_dataset
-
->>> model = Speech2TextForConditionalGeneration.from_pretrained("facebook/s2t-small-librispeech-asr")
->>> processor = Speech2TextProcessor.from_pretrained("facebook/s2t-small-librispeech-asr")
-
-
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
-
->>> inputs = processor(ds[0]["audio"]["array"], sampling_rate=ds[0]["audio"]["sampling_rate"], return_tensors="pt")
->>> generated_ids = model.generate(inputs["input_features"], attention_mask=inputs["attention_mask"])
-
->>> transcription = processor.batch_decode(generated_ids, skip_special_tokens=True)
->>> transcription
-['mister quilter is the apostle of the middle classes and we are glad to welcome his gospel']
+```py runnable:test_doc
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+import torch
+from transformers import Speech2TextProcessor, Speech2TextForConditionalGeneration
+from datasets import load_dataset
+model = Speech2TextForConditionalGeneration.from_pretrained("facebook/s2t-small-librispeech-asr")
+processor = Speech2TextProcessor.from_pretrained("facebook/s2t-small-librispeech-asr")
+ds = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
+inputs = processor(ds[0]["audio"]["array"], sampling_rate=ds[0]["audio"]["sampling_rate"], return_tensors="pt")
+generated_ids = model.generate(inputs["input_features"], attention_mask=inputs["attention_mask"])
+transcription = processor.batch_decode(generated_ids, skip_special_tokens=True)
+transcription
 ```
 
 - Multilingual speech translation
@@ -77,26 +72,22 @@ be installed as follows: `apt install libsndfile1-dev`
   example shows how to translate English speech to French text using the *facebook/s2t-medium-mustc-multilingual-st*
   checkpoint.
 
-```python
->>> import torch
->>> from transformers import Speech2TextProcessor, Speech2TextForConditionalGeneration
->>> from datasets import load_dataset
-
->>> model = Speech2TextForConditionalGeneration.from_pretrained("facebook/s2t-medium-mustc-multilingual-st")
->>> processor = Speech2TextProcessor.from_pretrained("facebook/s2t-medium-mustc-multilingual-st")
-
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
-
->>> inputs = processor(ds[0]["audio"]["array"], sampling_rate=ds[0]["audio"]["sampling_rate"], return_tensors="pt")
->>> generated_ids = model.generate(
-...     inputs["input_features"],
-...     attention_mask=inputs["attention_mask"],
-...     forced_bos_token_id=processor.tokenizer.lang_code_to_id["fr"],
-... )
-
->>> translation = processor.batch_decode(generated_ids, skip_special_tokens=True)
->>> translation
-["(Vidéo) Si M. Kilder est l'apossible des classes moyennes, et nous sommes heureux d'être accueillis dans son évangile."]
+```py runnable:test_doc:2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+import torch
+from transformers import Speech2TextProcessor, Speech2TextForConditionalGeneration
+from datasets import load_dataset
+model = Speech2TextForConditionalGeneration.from_pretrained("facebook/s2t-medium-mustc-multilingual-st")
+processor = Speech2TextProcessor.from_pretrained("facebook/s2t-medium-mustc-multilingual-st")
+ds = load_dataset("hf-internal-testing/librispeech_asr_demo", "clean", split="validation")
+inputs = processor(ds[0]["audio"]["array"], sampling_rate=ds[0]["audio"]["sampling_rate"], return_tensors="pt")
+generated_ids = model.generate(
+    inputs["input_features"],
+    attention_mask=inputs["attention_mask"],
+    forced_bos_token_id=processor.tokenizer.lang_code_to_id["fr"],
+)
+translation = processor.batch_decode(generated_ids, skip_special_tokens=True)
+translation
 ```
 
 See the [model hub](https://huggingface.co/models?filter=speech_to_text) to look for Speech2Text checkpoints.

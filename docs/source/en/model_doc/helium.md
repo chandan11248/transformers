@@ -111,21 +111,16 @@ Tips:
 
 In the following, we demonstrate how to use `helium-1-preview` for the inference.
 
-```python
->>> from transformers import AutoModelForCausalLM, AutoTokenizer
-
->>> model = AutoModelForCausalLM.from_pretrained("kyutai/helium-1-preview-2b", device_map="auto")
->>> tokenizer = AutoTokenizer.from_pretrained("kyutai/helium-1-preview-2b")
-
->>> prompt = "Give me a short introduction to large language model."
-
->>> model_inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-
->>> generated_ids = model.generate(model_inputs.input_ids, max_new_tokens=512, do_sample=True)
-
->>> generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
-
->>> response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+```py runnable:test_doc
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+model = AutoModelForCausalLM.from_pretrained("kyutai/helium-1-preview-2b", device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained("kyutai/helium-1-preview-2b")
+prompt = "Give me a short introduction to large language model."
+model_inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+generated_ids = model.generate(model_inputs.input_ids, max_new_tokens=512, do_sample=True)
+generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
+response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 ```
 
 ## HeliumConfig

@@ -65,37 +65,9 @@ Each **checkpoint** is trained with a specific prompt format, depending on the u
 Here's an example of how to structure your input.
 We will use [llava-hf/llava-1.5-7b-hf](https://huggingface.co/llava-hf/llava-1.5-7b-hf) and a conversation history of text and image. Each content field has to be a list of dicts, as follows:
 
-```python
-from transformers import AutoProcessor
-
-processor = AutoProcessor.from_pretrained("llava-hf/llava-1.5-7b-hf")
-
-conversation = [
-    {
-        "role": "user",
-        "content": [
-            {"type": "image"},
-            {"type": "text", "text": "What’s shown in this image?"},
-            ],
-    },
-    {
-        "role": "assistant",
-        "content": [{"type": "text", "text": "This image shows a red stop sign."},]
-    },
-    {
-
-        "role": "user",
-        "content": [
-            {"type": "text", "text": "Describe the image in more details."},
-        ],
-    },
-]
-
-text_prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
-
-# Note that the template simply formats your prompt, you still have to tokenize it and obtain pixel values for your images
-print(text_prompt)
->>> "USER: <image>\n<What’s shown in this image? ASSISTANT: This image shows a red stop sign.</s>USER: Describe the image in more details. ASSISTANT:"
+```py runnable:test_doc
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+"USER: <image>\n<What’s shown in this image? ASSISTANT: This image shows a red stop sign.</s>USER: Describe the image in more details. ASSISTANT:"
 ```
 
 - If you want to construct a chat prompt yourself, below is a list of prompt formats accepted by each llava checkpoint:

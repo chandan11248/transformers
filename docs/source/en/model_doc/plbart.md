@@ -59,14 +59,14 @@ it's passed with the `text_target` keyword argument.
 
 ### Supervised training
 
-```python
->>> from transformers import PLBartForConditionalGeneration, PLBartTokenizer
-
->>> tokenizer = PLBartTokenizer.from_pretrained("uclanlp/plbart-base", src_lang="en_XX", tgt_lang="python")
->>> example_python_phrase = "def maximum(a,b,c):NEW_LINE_INDENTreturn max([a,b,c])"
->>> expected_translation_english = "Returns the maximum value of a b c."
->>> inputs = tokenizer(example_python_phrase, text_target=expected_translation_english, return_tensors="pt")
->>> model(**inputs)
+```py runnable:test_doc_1
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import PLBartForConditionalGeneration, PLBartTokenizer
+tokenizer = PLBartTokenizer.from_pretrained("uclanlp/plbart-base", src_lang="en_XX", tgt_lang="python")
+example_python_phrase = "def maximum(a,b,c):NEW_LINE_INDENTreturn max([a,b,c])"
+expected_translation_english = "Returns the maximum value of a b c."
+inputs = tokenizer(example_python_phrase, text_target=expected_translation_english, return_tensors="pt")
+model(**inputs)
 ```
 
 ### Generation
@@ -74,16 +74,15 @@ it's passed with the `text_target` keyword argument.
   While generating the target text set the `decoder_start_token_id` to the target language id. The following
   example shows how to translate Python to English using the `uclanlp/plbart-python-en_XX` model.
 
-```python
->>> from transformers import PLBartForConditionalGeneration, PLBartTokenizer
-
->>> tokenizer = PLBartTokenizer.from_pretrained("uclanlp/plbart-python-en_XX", src_lang="python", tgt_lang="en_XX")
->>> example_python_phrase = "def maximum(a,b,c):NEW_LINE_INDENTreturn max([a,b,c])"
->>> inputs = tokenizer(example_python_phrase, return_tensors="pt")
->>> model = PLBartForConditionalGeneration.from_pretrained("uclanlp/plbart-python-en_XX")
->>> translated_tokens = model.generate(**inputs, decoder_start_token_id=tokenizer.lang_code_to_id["en_XX"])
->>> tokenizer.batch_decode(translated_tokens, skip_special_tokens=True)[0]
-"Returns the maximum value of a b c."
+```py runnable:test_doc_2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import PLBartForConditionalGeneration, PLBartTokenizer
+tokenizer = PLBartTokenizer.from_pretrained("uclanlp/plbart-python-en_XX", src_lang="python", tgt_lang="en_XX")
+example_python_phrase = "def maximum(a,b,c):NEW_LINE_INDENTreturn max([a,b,c])"
+inputs = tokenizer(example_python_phrase, return_tensors="pt")
+model = PLBartForConditionalGeneration.from_pretrained("uclanlp/plbart-python-en_XX")
+translated_tokens = model.generate(**inputs, decoder_start_token_id=tokenizer.lang_code_to_id["en_XX"])
+tokenizer.batch_decode(translated_tokens, skip_special_tokens=True)[0]
 ```
 
 ## Resources

@@ -38,14 +38,13 @@ An example of how to use a [`SpeechEncoderDecoderModel`] for inference can be se
 [`SpeechEncoderDecoderModel`] can be randomly initialized from an encoder and a decoder config. In the following example, we show how to do this using the default [`Wav2Vec2Model`] configuration for the encoder
 and the default [`BertForCausalLM`] configuration for the decoder.
 
-```python
->>> from transformers import BertConfig, Wav2Vec2Config, SpeechEncoderDecoderConfig, SpeechEncoderDecoderModel
-
->>> config_encoder = Wav2Vec2Config()
->>> config_decoder = BertConfig()
-
->>> config = SpeechEncoderDecoderConfig.from_encoder_decoder_configs(config_encoder, config_decoder)
->>> model = SpeechEncoderDecoderModel(config=config)
+```py runnable:test_doc_1
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import BertConfig, Wav2Vec2Config, SpeechEncoderDecoderConfig, SpeechEncoderDecoderModel
+config_encoder = Wav2Vec2Config()
+config_decoder = BertConfig()
+config = SpeechEncoderDecoderConfig.from_encoder_decoder_configs(config_encoder, config_decoder)
+model = SpeechEncoderDecoderModel(config=config)
 ```
 
 ## Initialising `SpeechEncoderDecoderModel` from a pretrained encoder and a pretrained decoder
@@ -55,12 +54,12 @@ Depending on which architecture you choose as the decoder, the cross-attention l
 Initializing [`SpeechEncoderDecoderModel`] from a pretrained encoder and decoder checkpoint requires the model to be fine-tuned on a downstream task, as has been shown in [the *Warm-starting-encoder-decoder blog post*](https://huggingface.co/blog/warm-starting-encoder-decoder).
 To do so, the `SpeechEncoderDecoderModel` class provides a [`SpeechEncoderDecoderModel.from_encoder_decoder_pretrained`] method.
 
-```python
->>> from transformers import SpeechEncoderDecoderModel
-
->>> model = SpeechEncoderDecoderModel.from_encoder_decoder_pretrained(
-...     "facebook/hubert-large-ll60k", "google-bert/bert-base-uncased"
-... )
+```py runnable:test_doc_2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import SpeechEncoderDecoderModel
+model = SpeechEncoderDecoderModel.from_encoder_decoder_pretrained(
+    "facebook/hubert-large-ll60k", "google-bert/bert-base-uncased"
+)
 ```
 
 ## Loading an existing `SpeechEncoderDecoderModel` checkpoint and perform inference
@@ -69,24 +68,21 @@ To load fine-tuned checkpoints of the `SpeechEncoderDecoderModel` class, [`Speec
 
 To perform inference, one uses the [`generate`] method, which allows to autoregressively generate text. This method supports various forms of decoding, such as greedy, beam search and multinomial sampling.
 
-```python
->>> from transformers import Wav2Vec2Processor, SpeechEncoderDecoderModel
->>> from datasets import load_dataset
->>> import torch
-
->>> # load a fine-tuned speech translation model and corresponding processor
->>> model = SpeechEncoderDecoderModel.from_pretrained("facebook/wav2vec2-xls-r-300m-en-to-15")
->>> processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-xls-r-300m-en-to-15")
-
->>> # let's perform inference on a piece of English speech (which we'll translate to German)
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
->>> input_values = processor(ds[0]["audio"]["array"], return_tensors="pt").input_values
-
->>> # autoregressively generate transcription (uses greedy decoding by default)
->>> generated_ids = model.generate(input_values)
->>> generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
->>> print(generated_text)
-Mr. Quilter ist der Apostel der Mittelschicht und wir freuen uns, sein Evangelium willkommen heißen zu können.
+```py runnable:test_doc_3
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import Wav2Vec2Processor, SpeechEncoderDecoderModel
+from datasets import load_dataset
+import torch
+# load a fine-tuned speech translation model and corresponding processor
+model = SpeechEncoderDecoderModel.from_pretrained("facebook/wav2vec2-xls-r-300m-en-to-15")
+processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-xls-r-300m-en-to-15")
+# let's perform inference on a piece of English speech (which we'll translate to German)
+ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+input_values = processor(ds[0]["audio"]["array"], return_tensors="pt").input_values
+# autoregressively generate transcription (uses greedy decoding by default)
+generated_ids = model.generate(input_values)
+generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+print(generated_text)
 ```
 
 ## Training
@@ -95,31 +91,26 @@ Once the model is created, it can be fine-tuned similar to BART, T5 or any other
 As you can see, only 2 inputs are required for the model in order to compute a loss: `input_values` (which are the
 speech inputs) and `labels` (which are the `input_ids` of the encoded target sequence).
 
-```python
->>> from transformers import AutoTokenizer, AutoFeatureExtractor, SpeechEncoderDecoderModel
->>> from datasets import load_dataset
-
->>> encoder_id = "facebook/wav2vec2-base-960h"  # acoustic model encoder
->>> decoder_id = "google-bert/bert-base-uncased"  # text decoder
-
->>> feature_extractor = AutoFeatureExtractor.from_pretrained(encoder_id)
->>> tokenizer = AutoTokenizer.from_pretrained(decoder_id)
->>> # Combine pre-trained encoder and pre-trained decoder to form a Seq2Seq model
->>> model = SpeechEncoderDecoderModel.from_encoder_decoder_pretrained(encoder_id, decoder_id)
-
->>> model.config.decoder_start_token_id = tokenizer.cls_token_id
->>> model.config.pad_token_id = tokenizer.pad_token_id
-
->>> # load an audio input and pre-process (normalise mean/std to 0/1)
->>> ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
->>> input_values = feature_extractor(ds[0]["audio"]["array"], return_tensors="pt").input_values
-
->>> # load its corresponding transcription and tokenize to generate labels
->>> labels = tokenizer(ds[0]["text"], return_tensors="pt").input_ids
-
->>> # the forward function automatically creates the correct decoder_input_ids
->>> loss = model(input_values=input_values, labels=labels).loss
->>> loss.backward()
+```py runnable:test_doc_4
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoTokenizer, AutoFeatureExtractor, SpeechEncoderDecoderModel
+from datasets import load_dataset
+encoder_id = "facebook/wav2vec2-base-960h"  # acoustic model encoder
+decoder_id = "google-bert/bert-base-uncased"  # text decoder
+feature_extractor = AutoFeatureExtractor.from_pretrained(encoder_id)
+tokenizer = AutoTokenizer.from_pretrained(decoder_id)
+# Combine pre-trained encoder and pre-trained decoder to form a Seq2Seq model
+model = SpeechEncoderDecoderModel.from_encoder_decoder_pretrained(encoder_id, decoder_id)
+model.config.decoder_start_token_id = tokenizer.cls_token_id
+model.config.pad_token_id = tokenizer.pad_token_id
+# load an audio input and pre-process (normalise mean/std to 0/1)
+ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
+input_values = feature_extractor(ds[0]["audio"]["array"], return_tensors="pt").input_values
+# load its corresponding transcription and tokenize to generate labels
+labels = tokenizer(ds[0]["text"], return_tensors="pt").input_ids
+# the forward function automatically creates the correct decoder_input_ids
+loss = model(input_values=input_values, labels=labels).loss
+loss.backward()
 ```
 
 ## SpeechEncoderDecoderConfig

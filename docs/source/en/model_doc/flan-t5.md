@@ -27,16 +27,14 @@ FLAN-T5 was released in the paper [Scaling Instruction-Finetuned Language Models
 
 One can directly use FLAN-T5 weights without finetuning the model:
 
-```python
->>> from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-
->>> model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-small")
->>> tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small")
-
->>> inputs = tokenizer("A step by step recipe to make bolognese pasta:", return_tensors="pt")
->>> outputs = model.generate(**inputs)
->>> print(tokenizer.batch_decode(outputs, skip_special_tokens=True))
-['Pour a cup of bolognese into a large bowl and add the pasta']
+```py runnable:test_doc
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-small")
+tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small")
+inputs = tokenizer("A step by step recipe to make bolognese pasta:", return_tensors="pt")
+outputs = model.generate(**inputs)
+print(tokenizer.batch_decode(outputs, skip_special_tokens=True))
 ```
 
 FLAN-T5 includes the same improvements as T5 version 1.1 (see [here](https://huggingface.co/docs/transformers/model_doc/t5v1.1) for the full details of the model's improvements.)

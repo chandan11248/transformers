@@ -62,40 +62,32 @@ The Mistral team has released 2 checkpoints:
 
 The base model can be used as follows:
 
-```python
->>> from transformers import AutoModelForCausalLM, AutoTokenizer
-
->>> model = AutoModelForCausalLM.from_pretrained("mistralai/Mixtral-8x7B-v0.1", device_map="auto")
->>> tokenizer = AutoTokenizer.from_pretrained("mistralai/Mixtral-8x7B-v0.1")
-
->>> prompt = "My favourite condiment is"
-
->>> model_inputs = tokenizer([prompt], return_tensors="pt").to(model.device)
-
->>> generated_ids = model.generate(**model_inputs, max_new_tokens=100, do_sample=True)
->>> tokenizer.batch_decode(generated_ids)[0]
-"My favourite condiment is to ..."
+```py runnable:test_doc_1
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+model = AutoModelForCausalLM.from_pretrained("mistralai/Mixtral-8x7B-v0.1", device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained("mistralai/Mixtral-8x7B-v0.1")
+prompt = "My favourite condiment is"
+model_inputs = tokenizer([prompt], return_tensors="pt").to(model.device)
+generated_ids = model.generate(**model_inputs, max_new_tokens=100, do_sample=True)
+tokenizer.batch_decode(generated_ids)[0]
 ```
 
 The instruction tuned model can be used as follows:
 
-```python
->>> from transformers import AutoModelForCausalLM, AutoTokenizer
-
->>> model = AutoModelForCausalLM.from_pretrained("mistralai/Mixtral-8x7B-Instruct-v0.1", device_map="auto")
->>> tokenizer = AutoTokenizer.from_pretrained("mistralai/Mixtral-8x7B-Instruct-v0.1")
-
->>> messages = [
-...     {"role": "user", "content": "What is your favourite condiment?"},
-...     {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"},
-...     {"role": "user", "content": "Do you have mayonnaise recipes?"}
-... ]
-
->>> model_inputs = tokenizer.apply_chat_template(messages, return_tensors="pt").to(model.device)
-
->>> generated_ids = model.generate(model_inputs, max_new_tokens=100, do_sample=True)
->>> tokenizer.batch_decode(generated_ids)[0]
-"Mayonnaise can be made as follows: (...)"
+```py runnable:test_doc_1:2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+model = AutoModelForCausalLM.from_pretrained("mistralai/Mixtral-8x7B-Instruct-v0.1", device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained("mistralai/Mixtral-8x7B-Instruct-v0.1")
+messages = [
+    {"role": "user", "content": "What is your favourite condiment?"},
+    {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"},
+    {"role": "user", "content": "Do you have mayonnaise recipes?"}
+]
+model_inputs = tokenizer.apply_chat_template(messages, return_tensors="pt").to(model.device)
+generated_ids = model.generate(model_inputs, max_new_tokens=100, do_sample=True)
+tokenizer.batch_decode(generated_ids)[0]
 ```
 
 As can be seen, the instruction-tuned model requires a [chat template](../chat_templating) to be applied to make sure the inputs are prepared in the right format.
@@ -114,20 +106,16 @@ Make also sure that you have a hardware that is compatible with Flash-Attention 
 
 To load and run a model using Flash Attention-2, refer to the snippet below:
 
-```python
->>> import torch
->>> from transformers import AutoModelForCausalLM, AutoTokenizer
-
->>> model = AutoModelForCausalLM.from_pretrained("mistralai/Mixtral-8x7B-v0.1", dtype=torch.float16, attn_implementation="flash_attention_2", device_map="auto")
->>> tokenizer = AutoTokenizer.from_pretrained("mistralai/Mixtral-8x7B-v0.1")
-
->>> prompt = "My favourite condiment is"
-
->>> model_inputs = tokenizer([prompt], return_tensors="pt").to(model.device)
-
->>> generated_ids = model.generate(**model_inputs, max_new_tokens=100, do_sample=True)
->>> tokenizer.batch_decode(generated_ids)[0]
-"The expected output"
+```py runnable:test_doc_2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+model = AutoModelForCausalLM.from_pretrained("mistralai/Mixtral-8x7B-v0.1", dtype=torch.float16, attn_implementation="flash_attention_2", device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained("mistralai/Mixtral-8x7B-v0.1")
+prompt = "My favourite condiment is"
+model_inputs = tokenizer([prompt], return_tensors="pt").to(model.device)
+generated_ids = model.generate(**model_inputs, max_new_tokens=100, do_sample=True)
+tokenizer.batch_decode(generated_ids)[0]
 ```
 
 ### Expected speedups
@@ -151,33 +139,27 @@ As the Mixtral model has 45 billion parameters, that would require about 90GB of
 
 Quantizing a model is as simple as passing a `quantization_config` to the model. Below, we'll leverage the bitsandbytes quantization library (but refer to [this page](../quantization) for alternative quantization methods):
 
-```python
->>> import torch
->>> from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-
->>> # specify how to quantize the model
->>> quantization_config = BitsAndBytesConfig(
-...         load_in_4bit=True,
-...         bnb_4bit_quant_type="nf4",
-...         bnb_4bit_compute_dtype="torch.float16",
-... )
-
->>> model = AutoModelForCausalLM.from_pretrained("mistralai/Mixtral-8x7B-Instruct-v0.1", quantization_config=True, device_map="auto")
->>> tokenizer = AutoTokenizer.from_pretrained("mistralai/Mixtral-8x7B-Instruct-v0.1")
-
->>> prompt = "My favourite condiment is"
-
->>> messages = [
-...     {"role": "user", "content": "What is your favourite condiment?"},
-...     {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"},
-...     {"role": "user", "content": "Do you have mayonnaise recipes?"}
-... ]
-
->>> model_inputs = tokenizer.apply_chat_template(messages, return_tensors="pt").to(model.device)
-
->>> generated_ids = model.generate(model_inputs, max_new_tokens=100, do_sample=True)
->>> tokenizer.batch_decode(generated_ids)[0]
-"The expected output"
+```py runnable:test_doc_3
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+# specify how to quantize the model
+quantization_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype="torch.float16",
+)
+model = AutoModelForCausalLM.from_pretrained("mistralai/Mixtral-8x7B-Instruct-v0.1", quantization_config=True, device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained("mistralai/Mixtral-8x7B-Instruct-v0.1")
+prompt = "My favourite condiment is"
+messages = [
+    {"role": "user", "content": "What is your favourite condiment?"},
+    {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"},
+    {"role": "user", "content": "Do you have mayonnaise recipes?"}
+]
+model_inputs = tokenizer.apply_chat_template(messages, return_tensors="pt").to(model.device)
+generated_ids = model.generate(model_inputs, max_new_tokens=100, do_sample=True)
+tokenizer.batch_decode(generated_ids)[0]
 ```
 
 This model was contributed by [Younes Belkada](https://huggingface.co/ybelkada) and [Arthur Zucker](https://huggingface.co/ArthurZ) .

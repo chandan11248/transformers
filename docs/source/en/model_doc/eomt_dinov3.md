@@ -51,27 +51,21 @@ The original code can be found [here](https://github.com/tue-mps/eomt).
 Below is a minimal example showing how to run panoptic segmentation with a DINOv3-backed EoMT model. The same
 image processor can be reused for semantic or instance segmentation simply by swapping the checkpoint.
 
-```python
->>> import requests
->>> import torch
->>> from PIL import Image
-
->>> from transformers import AutoImageProcessor, AutoModelForUniversalSegmentation
-
->>> model_id = "tue-mps/eomt-dinov3-coco-panoptic-base-640"
->>> processor = AutoImageProcessor.from_pretrained(model_id)
->>> model = AutoModelForUniversalSegmentation.from_pretrained(model_id).to("cuda" if torch.cuda.is_available() else "cpu")
-
->>> image = Image.open(requests.get("http://images.cocodataset.org/val2017/000000039769.jpg", stream=True).raw)
-
->>> inputs = processor(images=image, return_tensors="pt").to(model.device)
-
->>> with torch.inference_mode():
-...     outputs = model(**inputs)
-
->>> segmentation = processor.post_process_panoptic_segmentation(outputs, target_sizes=[image.size[::-1]])[0]
->>> list(segmentation.keys())
-['segmentation', 'segments_info']
+```py runnable:test_doc
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+import requests
+import torch
+from PIL import Image
+from transformers import AutoImageProcessor, AutoModelForUniversalSegmentation
+model_id = "tue-mps/eomt-dinov3-coco-panoptic-base-640"
+processor = AutoImageProcessor.from_pretrained(model_id)
+model = AutoModelForUniversalSegmentation.from_pretrained(model_id).to("cuda" if torch.cuda.is_available() else "cpu")
+image = Image.open(requests.get("http://images.cocodataset.org/val2017/000000039769.jpg", stream=True).raw)
+inputs = processor(images=image, return_tensors="pt").to(model.device)
+with torch.inference_mode():
+    outputs = model(**inputs)
+segmentation = processor.post_process_panoptic_segmentation(outputs, target_sizes=[image.size[::-1]])[0]
+list(segmentation.keys())
 ```
 
 ## EomtDinov3Config

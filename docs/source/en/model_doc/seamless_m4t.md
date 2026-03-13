@@ -43,37 +43,37 @@ The abstract from the paper is the following:
 
 First, load the processor and a checkpoint of the model:
 
-```python
->>> from transformers import AutoProcessor, SeamlessM4TModel
-
->>> processor = AutoProcessor.from_pretrained("facebook/hf-seamless-m4t-medium")
->>> model = SeamlessM4TModel.from_pretrained("facebook/hf-seamless-m4t-medium")
+```py runnable:test_doc_1
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoProcessor, SeamlessM4TModel
+processor = AutoProcessor.from_pretrained("facebook/hf-seamless-m4t-medium")
+model = SeamlessM4TModel.from_pretrained("facebook/hf-seamless-m4t-medium")
 ```
 
 You can seamlessly use this model on text or on audio, to generated either translated text or translated audio.
 
 Here is how to use the processor to process text and audio:
 
-```python
->>> # let's load an audio sample from an Arabic speech corpus
->>> from datasets import load_dataset
->>> dataset = load_dataset("halabi2016/arabic_speech_corpus", split="test", streaming=True)
->>> audio_sample = next(iter(dataset))["audio"]
-
->>> # now, process it
->>> audio_inputs = processor(audio=audio_sample["array"], return_tensors="pt")
-
->>> # now, process some English test as well
->>> text_inputs = processor(text = "Hello, my dog is cute", src_lang="eng", return_tensors="pt")
+```py runnable:test_doc_1:2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+# let's load an audio sample from an Arabic speech corpus
+from datasets import load_dataset
+dataset = load_dataset("halabi2016/arabic_speech_corpus", split="test", streaming=True)
+audio_sample = next(iter(dataset))["audio"]
+# now, process it
+audio_inputs = processor(audio=audio_sample["array"], return_tensors="pt")
+# now, process some English test as well
+text_inputs = processor(text = "Hello, my dog is cute", src_lang="eng", return_tensors="pt")
 ```
 
 ### Speech
 
 [`SeamlessM4TModel`] can *seamlessly* generate text or speech with few or no changes. Let's target Russian voice translation:
 
-```python
->>> audio_array_from_text = model.generate(**text_inputs, tgt_lang="rus")[0].cpu().numpy().squeeze()
->>> audio_array_from_audio = model.generate(**audio_inputs, tgt_lang="rus")[0].cpu().numpy().squeeze()
+```py runnable:test_doc_2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+audio_array_from_text = model.generate(**text_inputs, tgt_lang="rus")[0].cpu().numpy().squeeze()
+audio_array_from_audio = model.generate(**audio_inputs, tgt_lang="rus")[0].cpu().numpy().squeeze()
 ```
 
 With basically the same code, I've translated English text and Arabic speech to Russian speech samples.
@@ -83,14 +83,14 @@ With basically the same code, I've translated English text and Arabic speech to 
 Similarly, you can generate translated text from audio files or from text with the same model. You only have to pass `generate_speech=False` to [`SeamlessM4TModel.generate`].
 This time, let's translate to French.
 
-```python
->>> # from audio
->>> output_tokens = model.generate(**audio_inputs, tgt_lang="fra", generate_speech=False)
->>> translated_text_from_audio = processor.decode(output_tokens[0].tolist()[0], skip_special_tokens=True)
-
->>> # from text
->>> output_tokens = model.generate(**text_inputs, tgt_lang="fra", generate_speech=False)
->>> translated_text_from_text = processor.decode(output_tokens[0].tolist()[0], skip_special_tokens=True)
+```py runnable:test_doc_3
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+# from audio
+output_tokens = model.generate(**audio_inputs, tgt_lang="fra", generate_speech=False)
+translated_text_from_audio = processor.decode(output_tokens[0].tolist()[0], skip_special_tokens=True)
+# from text
+output_tokens = model.generate(**text_inputs, tgt_lang="fra", generate_speech=False)
+translated_text_from_text = processor.decode(output_tokens[0].tolist()[0], skip_special_tokens=True)
 ```
 
 ### Tips
@@ -100,16 +100,18 @@ This time, let's translate to French.
 [`SeamlessM4TModel`] is transformers top level model to generate speech and text, but you can also use dedicated models that perform the task without additional components, thus reducing the memory footprint.
 For example, you can replace the audio-to-audio generation snippet with the model dedicated to the S2ST task, the rest is exactly the same code:
 
-```python
->>> from transformers import SeamlessM4TForSpeechToSpeech
->>> model = SeamlessM4TForSpeechToSpeech.from_pretrained("facebook/hf-seamless-m4t-medium")
+```py runnable:test_doc_4
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import SeamlessM4TForSpeechToSpeech
+model = SeamlessM4TForSpeechToSpeech.from_pretrained("facebook/hf-seamless-m4t-medium")
 ```
 
 Or you can replace the text-to-text generation snippet with the model dedicated to the T2TT task, you only have to remove `generate_speech=False`.
 
-```python
->>> from transformers import SeamlessM4TForTextToText
->>> model = SeamlessM4TForTextToText.from_pretrained("facebook/hf-seamless-m4t-medium")
+```py runnable:test_doc_4:2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import SeamlessM4TForTextToText
+model = SeamlessM4TForTextToText.from_pretrained("facebook/hf-seamless-m4t-medium")
 ```
 
 Feel free to try out [`SeamlessM4TForSpeechToText`] and [`SeamlessM4TForTextToSpeech`] as well.

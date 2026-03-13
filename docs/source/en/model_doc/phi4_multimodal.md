@@ -45,48 +45,9 @@ print(result[0]['generated_text'])
 </hfoption>
 <hfoption id="AutoModel">
 
-```python
-import torch
-from transformers import AutoModelForCausalLM, AutoProcessor, GenerationConfig
-from accelerate import Accelerator
+```py runnable:test_doc_1
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
 
-model_path = "microsoft/Phi-4-multimodal-instruct"
-device = Accelerator().device
-
-processor = AutoProcessor.from_pretrained(model_path)
-model = AutoModelForCausalLM.from_pretrained(model_path, device_map=device, dtype=torch.float16)
-
-model.load_adapter(model_path, adapter_name="vision", device_map=device, adapter_kwargs={"subfolder": 'vision-lora'})
-
-messages = [
-    {
-        "role": "user",
-        "content": [
-            {"type": "image", "url": "https://www.ilankelman.org/stopsigns/australia.jpg"},
-            {"type": "text", "text": "What is shown in this image?"},
-        ],
-    },
-]
-
-model.set_adapter("vision")
-inputs = processor.apply_chat_template(
-    messages,
-    add_generation_prompt=True,
-    tokenize=True,
-    return_dict=True,
-    return_tensors="pt",
-).to(model.device)
-
-generate_ids = model.generate(
-    **inputs,
-    max_new_tokens=1000,
-    do_sample=False,
-)
-generate_ids = generate_ids[:, inputs['input_ids'].shape[1]:]
-response = processor.batch_decode(
-    generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False
-)[0]
-print(f'>>> Response\n{response}')
 ```
 
 </hfoption>
@@ -96,48 +57,8 @@ print(f'>>> Response\n{response}')
 
 The example below demonstrates inference with an audio and text input.
 
-```py
-import torch
-from transformers import AutoModelForCausalLM, AutoProcessor, GenerationConfig
-from accelerate import Accelerator
-
-model_path = "microsoft/Phi-4-multimodal-instruct"
-device = Accelerator().device
-
-processor = AutoProcessor.from_pretrained(model_path)
-model = AutoModelForCausalLM.from_pretrained(model_path, device_map=device,  dtype=torch.float16)
-
-model.load_adapter(model_path, adapter_name="speech", device_map=device, adapter_kwargs={"subfolder": 'speech-lora'})
-model.set_adapter("speech")
-audio_url = "https://upload.wikimedia.org/wikipedia/commons/b/b0/Barbara_Sahakian_BBC_Radio4_The_Life_Scientific_29_May_2012_b01j5j24.flac"
-messages = [
-    {
-        "role": "user",
-        "content": [
-            {"type": "audio", "url": audio_url},
-            {"type": "text", "text": "Transcribe the audio to text, and then translate the audio to French. Use <sep> as a separator between the origina transcript and the translation."},
-        ],
-    },
-]
-
-inputs = processor.apply_chat_template(
-    messages,
-    add_generation_prompt=True,
-    tokenize=True,
-    return_dict=True,
-    return_tensors="pt",
-).to(model.device)
-
-generate_ids = model.generate(
-    **inputs,
-    max_new_tokens=1000,
-    do_sample=False,
-)
-generate_ids = generate_ids[:, inputs['input_ids'].shape[1]:]
-response = processor.batch_decode(
-    generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False
-)[0]
-print(f'>>> Response\n{response}')
+```py runnable:test_doc_2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
 
 ```
 

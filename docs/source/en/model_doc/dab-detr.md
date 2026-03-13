@@ -92,26 +92,27 @@ There are three other ways to instantiate a DAB-DETR model (depending on what yo
 
 Option 1: Instantiate DAB-DETR with pre-trained weights for entire model
 
-```py
->>> from transformers import DabDetrForObjectDetection
-
->>> model = DabDetrForObjectDetection.from_pretrained("IDEA-Research/dab-detr-resnet-50")
+```py runnable:test_doc
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import DabDetrForObjectDetection
+model = DabDetrForObjectDetection.from_pretrained("IDEA-Research/dab-detr-resnet-50")
 ```
 
 Option 2: Instantiate DAB-DETR with randomly initialized weights for Transformer, but pre-trained weights for backbone
 
-```py
->>> from transformers import DabDetrConfig, DabDetrForObjectDetection
-
->>> config = DabDetrConfig()
->>> model = DabDetrForObjectDetection(config)
+```py runnable:test_doc:2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import DabDetrConfig, DabDetrForObjectDetection
+config = DabDetrConfig()
+model = DabDetrForObjectDetection(config)
 ```
 
 Option 3: Instantiate DAB-DETR with randomly initialized weights for backbone + Transformer
 
-```py
->>> config = DabDetrConfig()
->>> model = DabDetrForObjectDetection(config)
+```py runnable:test_doc:3
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+config = DabDetrConfig()
+model = DabDetrForObjectDetection(config)
 ```
 
 ## DabDetrConfig

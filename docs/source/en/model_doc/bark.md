@@ -119,54 +119,49 @@ Find out more on inference optimization techniques [here](https://huggingface.co
 Suno offers a library of voice presets in a number of languages [here](https://suno-ai.notion.site/8b8e8749ed514b0cbf3f699013548683?v=bc67cff786b04b50b3ceb756fd05f68c).
 These presets are also uploaded in the hub [here](https://huggingface.co/suno/bark-small/tree/main/speaker_embeddings) or [here](https://huggingface.co/suno/bark/tree/main/speaker_embeddings).
 
-```python
->>> from transformers import AutoProcessor, BarkModel
-
->>> processor = AutoProcessor.from_pretrained("suno/bark")
->>> model = BarkModel.from_pretrained("suno/bark")
-
->>> voice_preset = "v2/en_speaker_6"
-
->>> inputs = processor("Hello, my dog is cute", voice_preset=voice_preset)
-
->>> audio_array = model.generate(**inputs)
->>> audio_array = audio_array.cpu().numpy().squeeze()
+```py runnable:test_doc
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoProcessor, BarkModel
+processor = AutoProcessor.from_pretrained("suno/bark")
+model = BarkModel.from_pretrained("suno/bark")
+voice_preset = "v2/en_speaker_6"
+inputs = processor("Hello, my dog is cute", voice_preset=voice_preset)
+audio_array = model.generate(**inputs)
+audio_array = audio_array.cpu().numpy().squeeze()
 ```
 
 Bark can generate highly realistic, **multilingual** speech as well as other audio - including music, background noise and simple sound effects.
 
-```python
->>> # Multilingual speech - simplified Chinese
->>> inputs = processor("惊人的！我会说中文")
-
->>> # Multilingual speech - French - let's use a voice_preset as well
->>> inputs = processor("Incroyable! Je peux générer du son.", voice_preset="fr_speaker_5")
-
->>> # Bark can also generate music. You can help it out by adding music notes around your lyrics.
->>> inputs = processor("♪ Hello, my dog is cute ♪")
-
->>> audio_array = model.generate(**inputs)
->>> audio_array = audio_array.cpu().numpy().squeeze()
+```py runnable:test_doc:2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+# Multilingual speech - simplified Chinese
+inputs = processor("惊人的！我会说中文")
+# Multilingual speech - French - let's use a voice_preset as well
+inputs = processor("Incroyable! Je peux générer du son.", voice_preset="fr_speaker_5")
+# Bark can also generate music. You can help it out by adding music notes around your lyrics.
+inputs = processor("♪ Hello, my dog is cute ♪")
+audio_array = model.generate(**inputs)
+audio_array = audio_array.cpu().numpy().squeeze()
 ```
 
 The model can also produce **nonverbal communications** like laughing, sighing and crying.
 
-```python
->>> # Adding non-speech cues to the input text
->>> inputs = processor("Hello uh ... [clears throat], my dog is cute [laughter]")
-
->>> audio_array = model.generate(**inputs)
->>> audio_array = audio_array.cpu().numpy().squeeze()
+```py runnable:test_doc:3
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+# Adding non-speech cues to the input text
+inputs = processor("Hello uh ... [clears throat], my dog is cute [laughter]")
+audio_array = model.generate(**inputs)
+audio_array = audio_array.cpu().numpy().squeeze()
 ```
 
 To save the audio, simply take the sample rate from the model config and some scipy utility:
 
-```python
->>> from scipy.io.wavfile import write as write_wav
-
->>> # save audio to disk, but first take the sample rate from the model config
->>> sample_rate = model.generation_config.sample_rate
->>> write_wav("bark_generation.wav", sample_rate, audio_array)
+```py runnable:test_doc:4
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from scipy.io.wavfile import write as write_wav
+# save audio to disk, but first take the sample rate from the model config
+sample_rate = model.generation_config.sample_rate
+write_wav("bark_generation.wav", sample_rate, audio_array)
 ```
 
 ## BarkConfig

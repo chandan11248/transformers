@@ -84,13 +84,12 @@ channel are combined to give the final stereo output.
 The inputs for unconditional (or 'null') generation can be obtained through the method
 [`MusicgenForConditionalGeneration.get_unconditional_inputs`]:
 
-```python
->>> from transformers import MusicgenForConditionalGeneration
-
->>> model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small")
->>> unconditional_inputs = model.get_unconditional_inputs(num_samples=1)
-
->>> audio_values = model.generate(**unconditional_inputs, do_sample=True, max_new_tokens=256)
+```py runnable:test_doc_1
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import MusicgenForConditionalGeneration
+model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small")
+unconditional_inputs = model.get_unconditional_inputs(num_samples=1)
+audio_values = model.generate(**unconditional_inputs, do_sample=True, max_new_tokens=256)
 ```
 
 The audio outputs are a three-dimensional Torch tensor of shape `(batch_size, num_channels, sequence_length)`. To listen
@@ -105,11 +104,11 @@ Audio(audio_values[0].numpy(), rate=sampling_rate)
 
 Or save them as a `.wav` file using a third-party library, e.g. `scipy`:
 
-```python
->>> import scipy
-
->>> sampling_rate = model.config.audio_encoder.sampling_rate
->>> scipy.io.wavfile.write("musicgen_out.wav", rate=sampling_rate, data=audio_values[0, 0].numpy())
+```py runnable:test_doc_2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+import scipy
+sampling_rate = model.config.audio_encoder.sampling_rate
+scipy.io.wavfile.write("musicgen_out.wav", rate=sampling_rate, data=audio_values[0, 0].numpy())
 ```
 
 ### Text-Conditional Generation
@@ -117,18 +116,17 @@ Or save them as a `.wav` file using a third-party library, e.g. `scipy`:
 The model can generate an audio sample conditioned on a text prompt through use of the [`MusicgenProcessor`] to pre-process
 the inputs:
 
-```python
->>> from transformers import AutoProcessor, MusicgenForConditionalGeneration
-
->>> processor = AutoProcessor.from_pretrained("facebook/musicgen-small")
->>> model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small")
-
->>> inputs = processor(
-...     text=["80s pop track with bassy drums and synth", "90s rock song with loud guitars and heavy drums"],
-...     padding=True,
-...     return_tensors="pt",
-... )
->>> audio_values = model.generate(**inputs, do_sample=True, guidance_scale=3, max_new_tokens=256)
+```py runnable:test_doc_3
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoProcessor, MusicgenForConditionalGeneration
+processor = AutoProcessor.from_pretrained("facebook/musicgen-small")
+model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small")
+inputs = processor(
+    text=["80s pop track with bassy drums and synth", "90s rock song with loud guitars and heavy drums"],
+    padding=True,
+    return_tensors="pt",
+)
+audio_values = model.generate(**inputs, do_sample=True, guidance_scale=3, max_new_tokens=256)
 ```
 
 The `guidance_scale` is used in classifier free guidance (CFG), setting the weighting between the conditional logits
@@ -148,59 +146,51 @@ pip install --upgrade pip
 pip install datasets[audio]
 ```
 
-```python
->>> from transformers import AutoProcessor, MusicgenForConditionalGeneration
->>> from datasets import load_dataset
-
->>> processor = AutoProcessor.from_pretrained("facebook/musicgen-small")
->>> model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small")
-
->>> dataset = load_dataset("sanchit-gandhi/gtzan", split="train", streaming=True)
->>> sample = next(iter(dataset))["audio"]
-
->>> # take the first half of the audio sample
->>> sample["array"] = sample["array"][: len(sample["array"]) // 2]
-
->>> inputs = processor(
-...     audio=sample["array"],
-...     sampling_rate=sample["sampling_rate"],
-...     text=["80s blues track with groovy saxophone"],
-...     padding=True,
-...     return_tensors="pt",
-... )
->>> audio_values = model.generate(**inputs, do_sample=True, guidance_scale=3, max_new_tokens=256)
+```py runnable:test_doc_4
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoProcessor, MusicgenForConditionalGeneration
+from datasets import load_dataset
+processor = AutoProcessor.from_pretrained("facebook/musicgen-small")
+model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small")
+dataset = load_dataset("sanchit-gandhi/gtzan", split="train", streaming=True)
+sample = next(iter(dataset))["audio"]
+# take the first half of the audio sample
+sample["array"] = sample["array"][: len(sample["array"]) // 2]
+inputs = processor(
+    audio=sample["array"],
+    sampling_rate=sample["sampling_rate"],
+    text=["80s blues track with groovy saxophone"],
+    padding=True,
+    return_tensors="pt",
+)
+audio_values = model.generate(**inputs, do_sample=True, guidance_scale=3, max_new_tokens=256)
 ```
 
 For batched audio-prompted generation, the generated `audio_values` can be post-processed to remove padding by using the
 [`MusicgenProcessor`] class:
 
-```python
->>> from transformers import AutoProcessor, MusicgenForConditionalGeneration
->>> from datasets import load_dataset
-
->>> processor = AutoProcessor.from_pretrained("facebook/musicgen-small")
->>> model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small")
-
->>> dataset = load_dataset("sanchit-gandhi/gtzan", split="train", streaming=True)
->>> sample = next(iter(dataset))["audio"]
-
->>> # take the first quarter of the audio sample
->>> sample_1 = sample["array"][: len(sample["array"]) // 4]
-
->>> # take the first half of the audio sample
->>> sample_2 = sample["array"][: len(sample["array"]) // 2]
-
->>> inputs = processor(
-...     audio=[sample_1, sample_2],
-...     sampling_rate=sample["sampling_rate"],
-...     text=["80s blues track with groovy saxophone", "90s rock song with loud guitars and heavy drums"],
-...     padding=True,
-...     return_tensors="pt",
-... )
->>> audio_values = model.generate(**inputs, do_sample=True, guidance_scale=3, max_new_tokens=256)
-
->>> # post-process to remove padding from the batched audio
->>> audio_values = processor.batch_decode(audio_values, padding_mask=inputs.padding_mask)
+```py runnable:test_doc_4:2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoProcessor, MusicgenForConditionalGeneration
+from datasets import load_dataset
+processor = AutoProcessor.from_pretrained("facebook/musicgen-small")
+model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small")
+dataset = load_dataset("sanchit-gandhi/gtzan", split="train", streaming=True)
+sample = next(iter(dataset))["audio"]
+# take the first quarter of the audio sample
+sample_1 = sample["array"][: len(sample["array"]) // 4]
+# take the first half of the audio sample
+sample_2 = sample["array"][: len(sample["array"]) // 2]
+inputs = processor(
+    audio=[sample_1, sample_2],
+    sampling_rate=sample["sampling_rate"],
+    text=["80s blues track with groovy saxophone", "90s rock song with loud guitars and heavy drums"],
+    padding=True,
+    return_tensors="pt",
+)
+audio_values = model.generate(**inputs, do_sample=True, guidance_scale=3, max_new_tokens=256)
+# post-process to remove padding from the batched audio
+audio_values = processor.batch_decode(audio_values, padding_mask=inputs.padding_mask)
 ```
 
 ### Generation Configuration
@@ -208,19 +198,16 @@ For batched audio-prompted generation, the generated `audio_values` can be post-
 The default parameters that control the generation process, such as sampling, guidance scale and number of generated
 tokens, can be found in the model's generation config, and updated as desired:
 
-```python
->>> from transformers import MusicgenForConditionalGeneration
-
->>> model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small")
-
->>> # inspect the default generation config
->>> model.generation_config
-
->>> # increase the guidance scale to 4.0
->>> model.generation_config.guidance_scale = 4.0
-
->>> # decrease the max length to 256 tokens
->>> model.generation_config.max_length = 256
+```py runnable:test_doc_5
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import MusicgenForConditionalGeneration
+model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small")
+# inspect the default generation config
+model.generation_config
+# increase the guidance scale to 4.0
+model.generation_config.guidance_scale = 4.0
+# decrease the max length to 256 tokens
+model.generation_config.max_length = 256
 ```
 
 Note that any arguments passed to the generate method will **supersede** those in the generation config, so setting
@@ -240,15 +227,14 @@ or as a composite model that includes the text encoder and audio encoder/decoder
 [`MusicgenForConditionalGeneration`]. If only the decoder needs to be loaded from the pre-trained checkpoint, it can be loaded by first
 specifying the correct config, or be accessed through the `.decoder` attribute of the composite model:
 
-```python
->>> from transformers import AutoConfig, MusicgenForCausalLM, MusicgenForConditionalGeneration
-
->>> # Option 1: get decoder config and pass to `.from_pretrained`
->>> decoder_config = AutoConfig.from_pretrained("facebook/musicgen-small").decoder
->>> decoder = MusicgenForCausalLM.from_pretrained("facebook/musicgen-small", **decoder_config)
-
->>> # Option 2: load the entire composite model, but only return the decoder
->>> decoder = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small").decoder
+```py runnable:test_doc_6
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoConfig, MusicgenForCausalLM, MusicgenForConditionalGeneration
+# Option 1: get decoder config and pass to `.from_pretrained`
+decoder_config = AutoConfig.from_pretrained("facebook/musicgen-small").decoder
+decoder = MusicgenForCausalLM.from_pretrained("facebook/musicgen-small", **decoder_config)
+# Option 2: load the entire composite model, but only return the decoder
+decoder = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small").decoder
 ```
 
 Since the text encoder and audio encoder/decoder models are frozen during training, the MusicGen decoder [`MusicgenForCausalLM`]

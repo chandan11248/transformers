@@ -24,31 +24,27 @@ rendered properly in your Markdown viewer.
 
 Helper class to enable loading timm models to be used with the transformers library and its autoclasses.
 
-```python
->>> import torch
->>> from PIL import Image
->>> from urllib.request import urlopen
->>> from transformers import AutoModelForImageClassification, AutoImageProcessor
-
->>> # Load image
->>> image = Image.open(urlopen(
-...     'https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/beignets-task-guide.png'
-... ))
-
->>> # Load model and image processor
->>> checkpoint = "timm/resnet50.a1_in1k"
->>> image_processor = AutoImageProcessor.from_pretrained(checkpoint)
->>> model = AutoModelForImageClassification.from_pretrained(checkpoint).eval()
-
->>> # Preprocess image
->>> inputs = image_processor(image)
-
->>> # Forward pass
->>> with torch.no_grad():
-...     logits = model(**inputs).logits
-
->>> # Get top 5 predictions
->>> top5_probabilities, top5_class_indices = torch.topk(logits.softmax(dim=1) * 100, k=5)
+```py runnable:test_doc
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+import torch
+from PIL import Image
+from urllib.request import urlopen
+from transformers import AutoModelForImageClassification, AutoImageProcessor
+# Load image
+image = Image.open(urlopen(
+    'https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/beignets-task-guide.png'
+))
+# Load model and image processor
+checkpoint = "timm/resnet50.a1_in1k"
+image_processor = AutoImageProcessor.from_pretrained(checkpoint)
+model = AutoModelForImageClassification.from_pretrained(checkpoint).eval()
+# Preprocess image
+inputs = image_processor(image)
+# Forward pass
+with torch.no_grad():
+    logits = model(**inputs).logits
+# Get top 5 predictions
+top5_probabilities, top5_class_indices = torch.topk(logits.softmax(dim=1) * 100, k=5)
 ```
 
 ## Resources

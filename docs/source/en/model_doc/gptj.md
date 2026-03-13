@@ -37,17 +37,16 @@ This model was contributed by [Stella Biderman](https://huggingface.co/stellaath
   used to initialize the model in half-precision on a CUDA device only. There is also a fp16 branch which stores the fp16 weights,
   which could be used to further minimize the RAM usage:
 
-```python
->>> from transformers import GPTJForCausalLM
-from accelerate import Accelerator
->>> import torch
-
->>> device = Accelerator().device
->>> model = GPTJForCausalLM.from_pretrained(
-...     "EleutherAI/gpt-j-6B",
-...     revision="float16",
-...     dtype=torch.float16,
-... ).to(device)
+```py runnable:test_doc_1
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import GPTJForCausalLM
+import torch
+device = Accelerator().device
+model = GPTJForCausalLM.from_pretrained(
+    "EleutherAI/gpt-j-6B",
+    revision="float16",
+    dtype=torch.float16,
+).to(device)
 ```
 
 - The model should fit on 16GB GPU for inference. For training/fine-tuning it would take much more GPU RAM. Adam
@@ -68,55 +67,48 @@ from accelerate import Accelerator
 The [`~generation.GenerationMixin.generate`] method can be used to generate text using GPT-J
 model.
 
-```python
->>> from transformers import AutoModelForCausalLM, AutoTokenizer
-
->>> model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B")
->>> tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B")
-
->>> prompt = (
-...     "In a shocking finding, scientists discovered a herd of unicorns living in a remote, "
-...     "previously unexplored valley, in the Andes Mountains. Even more surprising to the "
-...     "researchers was the fact that the unicorns spoke perfect English."
-... )
-
->>> input_ids = tokenizer(prompt, return_tensors="pt").input_ids
-
->>> gen_tokens = model.generate(
-...     input_ids,
-...     do_sample=True,
-...     temperature=0.9,
-...     max_length=100,
-... )
->>> gen_text = tokenizer.batch_decode(gen_tokens)[0]
+```py runnable:test_doc_2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B")
+tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+prompt = (
+    "In a shocking finding, scientists discovered a herd of unicorns living in a remote, "
+    "previously unexplored valley, in the Andes Mountains. Even more surprising to the "
+    "researchers was the fact that the unicorns spoke perfect English."
+)
+input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+gen_tokens = model.generate(
+    input_ids,
+    do_sample=True,
+    temperature=0.9,
+    max_length=100,
+)
+gen_text = tokenizer.batch_decode(gen_tokens)[0]
 ```
 
 ...or in float16 precision:
 
-```python
->>> from transformers import GPTJForCausalLM, AutoTokenizer
-from accelerate import Accelerator
->>> import torch
-
->>> device = Accelerator().device
->>> model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", dtype=torch.float16).to(device)
->>> tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B")
-
->>> prompt = (
-...     "In a shocking finding, scientists discovered a herd of unicorns living in a remote, "
-...     "previously unexplored valley, in the Andes Mountains. Even more surprising to the "
-...     "researchers was the fact that the unicorns spoke perfect English."
-... )
-
->>> input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(model.device)
-
->>> gen_tokens = model.generate(
-...     input_ids,
-...     do_sample=True,
-...     temperature=0.9,
-...     max_length=100,
-... )
->>> gen_text = tokenizer.batch_decode(gen_tokens)[0]
+```py runnable:test_doc_2:2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import GPTJForCausalLM, AutoTokenizer
+import torch
+device = Accelerator().device
+model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", dtype=torch.float16).to(device)
+tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+prompt = (
+    "In a shocking finding, scientists discovered a herd of unicorns living in a remote, "
+    "previously unexplored valley, in the Andes Mountains. Even more surprising to the "
+    "researchers was the fact that the unicorns spoke perfect English."
+)
+input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(model.device)
+gen_tokens = model.generate(
+    input_ids,
+    do_sample=True,
+    temperature=0.9,
+    max_length=100,
+)
+gen_text = tokenizer.batch_decode(gen_tokens)[0]
 ```
 
 ## Resources

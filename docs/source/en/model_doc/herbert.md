@@ -47,21 +47,18 @@ This model was contributed by [rmroczkowski](https://huggingface.co/rmroczkowski
 
 ## Usage example
 
-```python
->>> from transformers import HerbertTokenizer, RobertaModel
-
->>> tokenizer = HerbertTokenizer.from_pretrained("allegro/herbert-klej-cased-tokenizer-v1")
->>> model = RobertaModel.from_pretrained("allegro/herbert-klej-cased-v1")
-
->>> encoded_input = tokenizer.encode("Kto ma lepszą sztukę, ma lepszy rząd – to jasne.", return_tensors="pt")
->>> outputs = model(encoded_input)
-
->>> # HerBERT can also be loaded using AutoTokenizer and AutoModel:
->>> import torch
->>> from transformers import AutoModel, AutoTokenizer
-
->>> tokenizer = AutoTokenizer.from_pretrained("allegro/herbert-klej-cased-tokenizer-v1")
->>> model = AutoModel.from_pretrained("allegro/herbert-klej-cased-v1")
+```py runnable:test_doc
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import HerbertTokenizer, RobertaModel
+tokenizer = HerbertTokenizer.from_pretrained("allegro/herbert-klej-cased-tokenizer-v1")
+model = RobertaModel.from_pretrained("allegro/herbert-klej-cased-v1")
+encoded_input = tokenizer.encode("Kto ma lepszą sztukę, ma lepszy rząd – to jasne.", return_tensors="pt")
+outputs = model(encoded_input)
+# HerBERT can also be loaded using AutoTokenizer and AutoModel:
+import torch
+from transformers import AutoModel, AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained("allegro/herbert-klej-cased-tokenizer-v1")
+model = AutoModel.from_pretrained("allegro/herbert-klej-cased-v1")
 ```
 
 <Tip>

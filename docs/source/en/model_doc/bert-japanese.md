@@ -37,39 +37,30 @@ See [details on cl-tohoku repository](https://github.com/cl-tohoku/bert-japanese
 
 Example of using a model with MeCab and WordPiece tokenization:
 
-```python
->>> import torch
->>> from transformers import AutoModel, AutoTokenizer
-
->>> bertjapanese = AutoModel.from_pretrained("cl-tohoku/bert-base-japanese")
->>> tokenizer = AutoTokenizer.from_pretrained("cl-tohoku/bert-base-japanese")
-
->>> ## Input Japanese Text
->>> line = "吾輩は猫である。"
-
->>> inputs = tokenizer(line, return_tensors="pt")
-
->>> print(tokenizer.decode(inputs["input_ids"][0]))
-[CLS] 吾輩 は 猫 で ある 。 [SEP]
-
->>> outputs = bertjapanese(**inputs)
+```py runnable:test_doc
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+import torch
+from transformers import AutoModel, AutoTokenizer
+bertjapanese = AutoModel.from_pretrained("cl-tohoku/bert-base-japanese")
+tokenizer = AutoTokenizer.from_pretrained("cl-tohoku/bert-base-japanese")
+## Input Japanese Text
+line = "吾輩は猫である。"
+inputs = tokenizer(line, return_tensors="pt")
+print(tokenizer.decode(inputs["input_ids"][0]))
+outputs = bertjapanese(**inputs)
 ```
 
 Example of using a model with Character tokenization:
 
-```python
->>> bertjapanese = AutoModel.from_pretrained("cl-tohoku/bert-base-japanese-char")
->>> tokenizer = AutoTokenizer.from_pretrained("cl-tohoku/bert-base-japanese-char")
-
->>> ## Input Japanese Text
->>> line = "吾輩は猫である。"
-
->>> inputs = tokenizer(line, return_tensors="pt")
-
->>> print(tokenizer.decode(inputs["input_ids"][0]))
-[CLS] 吾 輩 は 猫 で あ る 。 [SEP]
-
->>> outputs = bertjapanese(**inputs)
+```py runnable:test_doc:2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+bertjapanese = AutoModel.from_pretrained("cl-tohoku/bert-base-japanese-char")
+tokenizer = AutoTokenizer.from_pretrained("cl-tohoku/bert-base-japanese-char")
+## Input Japanese Text
+line = "吾輩は猫である。"
+inputs = tokenizer(line, return_tensors="pt")
+print(tokenizer.decode(inputs["input_ids"][0]))
+outputs = bertjapanese(**inputs)
 ```
 
 This model was contributed by [cl-tohoku](https://huggingface.co/cl-tohoku).

@@ -52,37 +52,9 @@ The attributes can be obtained from model config, as `model.config.vision_config
 
 - For better results, we recommend users to use the processor's `apply_chat_template()` method to format your prompt correctly. For that you need to construct a conversation history, passing in a plain string will not format your prompt. Each message in the conversation history for chat templates is a dictionary with keys "role" and "content". The "content" should be a list of dictionaries, for "text" and "image" modalities, as follows:
 
-```python
-from transformers import AutoProcessor
-
-processor = AutoProcessor.from_pretrained("llava-hf/vip-llava-7b-hf")
-
-conversation = [
-    {
-        "role": "user",
-        "content": [
-            {"type": "image"},
-            {"type": "text", "text": "What’s shown in this image?"},
-        ],
-    },
-    {
-        "role": "assistant",
-        "content": [{"type": "text", "text": "This image shows a red stop sign."},]
-    },
-    {
-
-        "role": "user",
-        "content": [
-            {"type": "text", "text": "Describe the image in more details."},
-        ],
-    },
-]
-
-text_prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
-
-# Note that the template simply formats your prompt, you still have to tokenize it and obtain pixel values for your images
-print(text_prompt)
->>> "###Human: <image>\nWhat’s shown in this image?###Assistant: This image shows a red stop sign.###Human: Describe the image in more details.###Assistant:"
+```py runnable:test_doc
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+"###Human: <image>\nWhat’s shown in this image?###Assistant: This image shows a red stop sign.###Human: Describe the image in more details.###Assistant:"
 ```
 
 - If you want to construct a chat prompt yourself, below is a list of prompt formats accepted by VipLLaVa checkpoints:

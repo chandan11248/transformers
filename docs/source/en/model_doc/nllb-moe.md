@@ -67,20 +67,17 @@ example shows how to translate English to French using the *facebook/nllb-200-di
 Note that we're using the BCP-47 code for French `fra_Latn`. See [here](https://github.com/facebookresearch/flores/blob/main/flores200/README.md#languages-in-flores-200)
 for the list of all BCP-47 in the Flores 200 dataset.
 
-```python
->>> from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-
->>> tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-moe-54b")
->>> model = AutoModelForSeq2SeqLM.from_pretrained("facebook/nllb-moe-54b")
-
->>> article = "Previously, Ring's CEO, Jamie Siminoff, remarked the company started when his doorbell wasn't audible from his shop in his garage."
->>> inputs = tokenizer(article, return_tensors="pt")
-
->>> translated_tokens = model.generate(
-...     **inputs, forced_bos_token_id=tokenizer.lang_code_to_id["fra_Latn"], max_length=50
-... )
->>> tokenizer.batch_decode(translated_tokens, skip_special_tokens=True)[0]
-"Auparavant, le PDG de Ring, Jamie Siminoff, a fait remarquer que la société avait commencé lorsque sa sonnette n'était pas audible depuis son magasin dans son garage."
+```py runnable:test_doc_1
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-moe-54b")
+model = AutoModelForSeq2SeqLM.from_pretrained("facebook/nllb-moe-54b")
+article = "Previously, Ring's CEO, Jamie Siminoff, remarked the company started when his doorbell wasn't audible from his shop in his garage."
+inputs = tokenizer(article, return_tensors="pt")
+translated_tokens = model.generate(
+    **inputs, forced_bos_token_id=tokenizer.lang_code_to_id["fra_Latn"], max_length=50
+)
+tokenizer.batch_decode(translated_tokens, skip_special_tokens=True)[0]
 ```
 
 ### Generating from any other language than English
@@ -90,19 +87,17 @@ you should specify the BCP-47 code in the `src_lang` keyword argument of the tok
 
 See example below for a translation from romanian to german:
 
-```python
->>> from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-
->>> tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-moe-54b", src_lang="ron_Latn")
->>> model = AutoModelForSeq2SeqLM.from_pretrained("facebook/nllb-moe-54b")
-
->>> article = "Şeful ONU spune că nu există o soluţie militară în Siria"
->>> inputs = tokenizer(article, return_tensors="pt")
-
->>> translated_tokens = model.generate(
-...     **inputs, forced_bos_token_id=tokenizer.lang_code_to_id["deu_Latn"], max_length=30
-... )
->>> tokenizer.batch_decode(translated_tokens, skip_special_tokens=True)[0]
+```py runnable:test_doc_2
+# pytest-decorator: transformers.testing_utils.slow, transformers.testing_utils.require_torch
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-moe-54b", src_lang="ron_Latn")
+model = AutoModelForSeq2SeqLM.from_pretrained("facebook/nllb-moe-54b")
+article = "Şeful ONU spune că nu există o soluţie militară în Siria"
+inputs = tokenizer(article, return_tensors="pt")
+translated_tokens = model.generate(
+    **inputs, forced_bos_token_id=tokenizer.lang_code_to_id["deu_Latn"], max_length=30
+)
+tokenizer.batch_decode(translated_tokens, skip_special_tokens=True)[0]
 ```
 
 ## Resources
