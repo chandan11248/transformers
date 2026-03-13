@@ -98,6 +98,10 @@ jobs:
         working-directory: /transformers
         run: python3 -m pip uninstall -y transformers && python3 -m pip install -e .
 
+      - name: Install hf-doc-builder (for runnable doc tests)
+        working-directory: /transformers
+        run: python3 -m pip install 'hf-doc-builder @ git+https://github.com/huggingface/doc-builder.git@add-runnable-block-processing'
+
       - name: Install extra pip packages
         if: ${{ inputs.extra_pip_packages != '' }}
         working-directory: /transformers
@@ -175,6 +179,12 @@ jobs:
             test_path="tests/trainer/distributed/test_trainer_distributed_ddp.py"
           elif [ "$model" = "trainer" ] && [ "$report_name_prefix" = "run_trainer_and_fsdp_gpu" ]; then
             test_path="tests/trainer --ignore=tests/trainer/distributed"
+          fi
+          # Include doc integration tests (runnable blocks in model doc markdown)
+          model_name="${model#models/}"
+          doc_path="docs/source/en/model_doc/${model_name}.md"
+          if [ -f "$doc_path" ]; then
+            test_path="$test_path $doc_path"
           fi
           script -q -c "PATCH_TESTING_METHODS_TO_COLLECT_OUTPUTS=yes _PATCHED_TESTING_METHODS_OUTPUT_DIR=/transformers/reports/${machine_type}_${report_name_prefix}_${matrix_folders}_test_reports python3 -m pytest -rsfE -v -m '${pytest_marker}' --make-reports=${machine_type}_${report_name_prefix}_${matrix_folders}_test_reports ${test_path}" test_outputs.txt
           ls -la

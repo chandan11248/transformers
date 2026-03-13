@@ -15,18 +15,8 @@
 
 import tempfile
 import unittest
-from pathlib import Path
 
 import pytest
-
-
-try:
-    from doc_builder.testing import DocIntegrationTest
-
-    DOC_BUILDER_AVAILABLE = True
-except ImportError:
-    DocIntegrationTest = unittest.TestCase
-    DOC_BUILDER_AVAILABLE = False
 
 from transformers import (
     AutoProcessor,
@@ -309,15 +299,3 @@ class GlmAsrForConditionalGenerationIntegrationTest(unittest.TestCase):
             "This week, I traveled to Chicago to deliver my final farewell address to the nation, following in the tradition of presidents before me. It was an opportunity to say thank you. Whether we've seen eye to eye or rarely agreed at all, my conversations with you, the American people, in living rooms and schools, at farms and on factory floors, at diners and on distant military outposts, all these conversations are what have kept me honest, kept me inspired, and kept me going. Every day, I learned from you. You made me a better president, and you made me a better man. Over the"
         ]
         self.assertEqual(decoded_outputs, EXPECTED_OUTPUT)
-
-
-@require_torch
-@slow
-@unittest.skipUnless(
-    DOC_BUILDER_AVAILABLE,
-    "test requires `hf-doc-builder`; use: pip install 'hf-doc-builder @ git+https://github.com/huggingface/doc-builder.git@add-runnable-block-processing'",
-)
-class GlmAsrDocIntegrationTest(DocIntegrationTest):
-    # tests/models/glmasr -> tests/models -> tests -> repo root
-    doc_path = Path(__file__).resolve().parents[3] / "docs" / "source" / "en" / "model_doc" / "glmasr.md"
-    cleanup_func = staticmethod(lambda: cleanup(torch_device, gc_collect=True))
